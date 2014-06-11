@@ -18,7 +18,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.text.InputFilter.LengthFilter;
 import android.util.Log;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements SelectionListener {
 
@@ -26,7 +28,7 @@ public class MainActivity extends Activity implements SelectionListener {
 	public static final String[] FRIENDS = { "taylorswift13", "msrebeccablack",
 			"ladygaga" };
 	public static final String DATA_REFRESHED_ACTION = "course.labs.notificationslab.DATA_REFRESHED";
-	
+
 	private static final int NUM_FRIENDS = 3;
 	private static final String URL_LGAGA = "https://d396qusza40orc.cloudfront.net/android%2FLabs%2FUserNotifications%2Fladygaga.txt";
 	private static final String URL_RBLACK = "https://d396qusza40orc.cloudfront.net/android%2FLabs%2FUserNotifications%2Frebeccablack.txt";
@@ -81,31 +83,32 @@ public class MainActivity extends Activity implements SelectionListener {
 		if (!mIsFresh) {
 
 			// TODO:
-			// Show a Toast Notification to inform user that 
+			// Show a Toast Notification to inform user that
 			// the app is "Downloading Tweets from Network"
-			log ("Issuing Toast Message");
+			log("Issuing Toast Message");
+			Toast.makeText(this, "Downloading Tweets from Network",
+					Toast.LENGTH_LONG).show();
 
-			
-			
 			// TODO:
 			// Start new AsyncTask to download Tweets from network
+			DownloaderTask backgroundtask = new DownloaderTask(this);
+			backgroundtask.execute(URL_LGAGA, URL_RBLACK, URL_TSWIFT);
 
-
-
-			
 			// Set up a BroadcastReceiver to receive an Intent when download
-			// finishes. 
+			// finishes.
 			mRefreshReceiver = new BroadcastReceiver() {
 				@Override
 				public void onReceive(Context context, Intent intent) {
 
 					log("BroadcastIntent received in MainActivity");
 
-					// TODO:				
+					// TODO:
 					// Check to make sure this is an ordered broadcast
 					// Let sender know that the Intent was received
 					// by setting result code to RESULT_OK
-
+					if (mRefreshReceiver.isOrderedBroadcast()) {
+						mRefreshReceiver.setResultCode(RESULT_OK);
+					}
 
 				}
 			};
@@ -119,7 +122,7 @@ public class MainActivity extends Activity implements SelectionListener {
 		}
 	}
 
-	// Called when new Tweets have been downloaded 
+	// Called when new Tweets have been downloaded
 	public void setRefreshed(String[] feeds) {
 
 		mRawFeeds[0] = feeds[0];
@@ -144,9 +147,9 @@ public class MainActivity extends Activity implements SelectionListener {
 		}
 	}
 
-	// Calls FeedFragement.update, passing in the 
+	// Calls FeedFragement.update, passing in the
 	// the tweets for the currently selected friend
- 
+
 	void updateFeed() {
 
 		if (null != mFeedFragment)
@@ -177,11 +180,11 @@ public class MainActivity extends Activity implements SelectionListener {
 		super.onResume();
 
 		// TODO:
-		// Register the BroadcastReceiver to receive a 
+		// Register the BroadcastReceiver to receive a
 		// DATA_REFRESHED_ACTION broadcast
+		registerReceiver(mRefreshReceiver, new IntentFilter(
+				DATA_REFRESHED_ACTION));
 
-
-		
 	}
 
 	@Override
@@ -189,10 +192,9 @@ public class MainActivity extends Activity implements SelectionListener {
 
 		// TODO:
 		// Unregister the BroadcastReceiver
-
-
-		
-		
+		if (mRefreshReceiver != null) {
+			unregisterReceiver(mRefreshReceiver);
+		}
 		super.onPause();
 
 	}

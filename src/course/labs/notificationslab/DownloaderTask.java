@@ -19,6 +19,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewDebug.FlagToString;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
 public class DownloaderTask extends AsyncTask<String, Void, String[]> {
@@ -107,7 +111,7 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 		log("Tweet Download Completed:" + downloadCompleted);
 
 		notify(downloadCompleted);
-		
+
 		return mFeeds;
 
 	}
@@ -146,13 +150,14 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 		// active and in the foreground. Creates a new BroadcastReceiver
 		// to receive a result indicating the state of MainActivity
 
-		// The Action for this broadcast Intent is MainActivity.DATA_REFRESHED_ACTION
-		// The result Activity.RESULT_OK, indicates that MainActivity is active and
+		// The Action for this broadcast Intent is
+		// MainActivity.DATA_REFRESHED_ACTION
+		// The result Activity.RESULT_OK, indicates that MainActivity is active
+		// and
 		// in the foreground.
 
-		mApplicationContext.sendOrderedBroadcast(
-				new Intent(MainActivity.DATA_REFRESHED_ACTION), 
-				null,
+		mApplicationContext.sendOrderedBroadcast(new Intent(
+				MainActivity.DATA_REFRESHED_ACTION), null,
 				new BroadcastReceiver() {
 
 					final String failMsg = "Download has failed. Please retry Later.";
@@ -165,18 +170,19 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 
 						// TODO: Check whether the result code is RESULT_OK
 
-						if (/*change this*/ true) {
+						if (getResultCode() != MainActivity.RESULT_OK) {
 
-							// TODO:  If so, create a PendingIntent using the
+							// TODO: If so, create a PendingIntent using the
 							// restartMainActivityIntent and set its flags
 							// to FLAG_UPDATE_CURRENT
-							
-							final PendingIntent pendingIntent = null;
-							
 
+							final PendingIntent pendingIntent = PendingIntent
+									.getActivity(mApplicationContext, 0,
+											restartMainActivtyIntent,
+											PendingIntent.FLAG_UPDATE_CURRENT);
 
 							// Uses R.layout.custom_notification for the
-							// layout of the notification View. The xml 
+							// layout of the notification View. The xml
 							// file is in res/layout/custom_notification.xml
 
 							RemoteViews mContentView = new RemoteViews(
@@ -186,29 +192,44 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							// TODO: Set the notification View's text to
 							// reflect whether or the download completed
 							// successfully
+							if (success) {
+								mContentView.setTextViewText(R.id.text,
+										"Download completed successfully");
+							} else {
+								mContentView.setTextViewText(R.id.text,
+										"Download failed");
+							}
 
-
-							
 							// TODO: Use the Notification.Builder class to
 							// create the Notification. You will have to set
 							// several pieces of information. You can use
 							// android.R.drawable.stat_sys_warning
-							// for the small icon. You should also setAutoCancel(true). 
+							// for the small icon. You should also
+							// setAutoCancel(true).
 
-							Notification.Builder notificationBuilder = null;
+							Notification.Builder notificationBuilder = new Notification.Builder(
+									mApplicationContext);
+
+							Notification notification = notificationBuilder
+									.setContentTitle("Twit Downloader")
+									.setContentText(
+											"content text ... twitter feed updated")
+									.setSmallIcon(
+											android.R.drawable.stat_sys_warning)
+									.setContentIntent(pendingIntent).build();
 
 							// TODO: Send the notification
 
-							
-							
 							log("Notification Area Notification sent");
+							NotificationManager mNotifyMgr = (NotificationManager) mParentActivity
+									.getApplicationContext().getSystemService(
+											MainActivity.NOTIFICATION_SERVICE);
+							
+							mNotifyMgr.notify(MY_NOTIFICATION_ID, notification);
+
 						}
 					}
-				}, 
-				null, 
-				0, 
-				null, 
-				null);
+				}, null, 0, null, null);
 	}
 
 	// Saves the tweets to a file
