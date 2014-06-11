@@ -194,10 +194,10 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							// successfully
 							if (success) {
 								mContentView.setTextViewText(R.id.text,
-										"Download completed successfully");
+										successMsg);
 							} else {
-								mContentView.setTextViewText(R.id.text,
-										"Download failed");
+								mContentView
+										.setTextViewText(R.id.text, failMsg);
 							}
 
 							// TODO: Use the Notification.Builder class to
@@ -207,15 +207,29 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							// for the small icon. You should also
 							// setAutoCancel(true).
 
+							String longText = "Some very long text\n\nBlahh Blah Blah...\n\nYada Yada...\n\nDone";
 							Notification.Builder notificationBuilder = new Notification.Builder(
 									mApplicationContext);
 
 							Notification notification = notificationBuilder
-									.setContentTitle("Twit Downloader")
-									.setContentText(
-											"content text ... twitter feed updated")
+									//** NOTE: When using RemoteViews to generate custom notifications
+									//**       exclude setContentTitle and setContentText.
+									//**       These are irrelevant as it will use the RemoteViews layout and details.
+									//**       And will cause your notifications not to appear...
+									//.setContentTitle("Tweeter Downloader")
+									//.setContentText(
+									//		 "content text ... twitter feed updated")
+									.setContent(mContentView)
+									.setTicker("Tweets downloaded")								 
 									.setSmallIcon(
 											android.R.drawable.stat_sys_warning)
+//** Big View when notification expanded
+//									.setStyle(
+//											new Notification.BigTextStyle()
+//													.bigText(longText)
+//													.setBigContentTitle(
+//															"Tweeter Downloader"))
+									.setAutoCancel(true)
 									.setContentIntent(pendingIntent).build();
 
 							// TODO: Send the notification
@@ -224,7 +238,7 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							NotificationManager mNotifyMgr = (NotificationManager) mParentActivity
 									.getApplicationContext().getSystemService(
 											MainActivity.NOTIFICATION_SERVICE);
-							
+
 							mNotifyMgr.notify(MY_NOTIFICATION_ID, notification);
 
 						}
